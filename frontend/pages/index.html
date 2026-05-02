@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jawab | AI Customer Support for SMEs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #111111;
+      --bg-tertiary: #1a1a1a;
+      --neon-green: #39ff14;
+      --neon-green-dim: #25b80d;
+      --neon-green-faint: rgba(57, 255, 20, 0.08);
+      --text-primary: #f0f0f0;
+      --text-secondary: #888888;
+      --text-dim: #444444;
+      --border-color: rgba(57, 255, 20, 0.15);
+      --border-active: rgba(57, 255, 20, 0.5);
+      --danger: #ff4444;
+      --warning: #ffaa00;
+      --success: #39ff14;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: "DM Sans", sans-serif;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    body.page-ready { opacity: 1; }
+    body.page-fade-out { opacity: 0; }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      width: min(1200px, 92vw);
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(10, 10, 10, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 0;
+      gap: 20px;
+    }
+    .logo {
+      font-family: "Orbitron", sans-serif;
+      letter-spacing: 3px;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--neon-green);
+      text-shadow: 0 0 12px rgba(57, 255, 20, 0.6);
+      animation: glowPulse 2.4s ease-in-out infinite;
+    }
+    .nav-links {
+      display: flex;
+      gap: 22px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .nav-links a {
+      transition: color 0.2s ease;
+    }
+    .nav-links a:hover { color: var(--text-primary); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: var(--neon-green);
+      color: #0a0a0a;
+      box-shadow: 0 0 18px rgba(57, 255, 20, 0.35);
+    }
+    .btn-primary:hover { box-shadow: 0 0 24px rgba(57, 255, 20, 0.55); }
+    .btn-outline {
+      border-color: var(--neon-green);
+      color: var(--neon-green);
+      background: transparent;
+    }
+    .btn-outline:hover { border-color: var(--border-active); }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: 120px 0 80px;
+    }
+    #hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.6;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+    .hero-title {
+      font-family: "Orbitron", sans-serif;
+      font-size: clamp(36px, 6vw, 64px);
+      line-height: 1.1;
+      margin: 0 0 16px;
+      text-shadow: 0 0 16px rgba(57, 255, 20, 0.25);
+      animation: glowPulse 2.6s ease-in-out infinite;
+    }
+    .typed-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cursor {
+      width: 12px;
+      height: 28px;
+      background: var(--neon-green);
+      display: inline-block;
+      animation: cursorBlink 0.9s steps(1) infinite;
+    }
+    .hero-sub {
+      max-width: 760px;
+      margin: 0 auto 28px;
+      color: var(--text-secondary);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    .hero-cta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+    .trust-badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+    .badge-pill {
+      border: 1px solid var(--border-color);
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--bg-secondary);
+    }
+
+    .section {
+      padding: 80px 0;
+    }
+    .section-title {
+      font-family: "Orbitron", sans-serif;
+      font-size: clamp(24px, 3.5vw, 40px);
+      margin: 0 0 10px;
+    }
+    .section-sub {
+      color: var(--text-secondary);
+      margin: 0 0 40px;
+      max-width: 760px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+    }
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 22px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-active);
+      box-shadow: 0 0 18px rgba(57, 255, 20, 0.18);
+    }
+    .card h4 {
+      margin: 12px 0 8px;
+      font-size: 18px;
+    }
+    .card p {
+      margin: 0;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      position: relative;
+    }
+    .flow::before {
+      content: "";
+      position: absolute;
+      top: 28px;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: var(--border-color);
+    }
+    .flow-step {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 22px;
+      text-align: left;
+      position: relative;
+      z-index: 1;
+    }
+    .flow-step span {
+      font-family: "JetBrains Mono", monospace;
+      color: var(--neon-green);
+      font-size: 14px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+    .stat-card h3 {
+      font-family: "Orbitron", sans-serif;
+      color: var(--neon-green);
+      margin: 0 0 8px;
+      text-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
+    }
+    .stat-card p { color: var(--text-secondary); margin: 0; }
+
+    .cta-banner {
+      border-top: 1px solid var(--neon-green);
+      border-bottom: 1px solid var(--neon-green);
+      background: var(--bg-secondary);
+      padding: 56px 0;
+    }
+    .cta-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .cta-inner h2 {
+      margin: 0 0 12px;
+      font-family: "Orbitron", sans-serif;
+      font-size: clamp(24px, 4vw, 40px);
+    }
+    .cta-inner p { margin: 0; color: var(--text-secondary); }
+
+    .footer {
+      margin-top: auto;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-primary);
+      padding: 32px 0 24px;
+    }
+    .footer-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .footer p { color: var(--text-secondary); margin: 8px 0 0; }
+    .footer-links { display: flex; gap: 16px; color: var(--text-secondary); }
+    .footer-bottom { margin-top: 18px; color: var(--text-dim); font-size: 13px; }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { text-shadow: 0 0 12px rgba(57, 255, 20, 0.4); }
+      50% { text-shadow: 0 0 22px rgba(57, 255, 20, 0.8); }
+    }
+    @keyframes cursorBlink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb {
+      background: var(--neon-green-dim);
+      border-radius: 10px;
+    }
+    * { scrollbar-width: thin; scrollbar-color: var(--neon-green-dim) var(--bg-primary); }
+
+    @media (max-width: 900px) {
+      .nav-inner { flex-direction: column; align-items: flex-start; }
+      .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow, .stats { grid-template-columns: 1fr; }
+      .flow::before { display: none; }
+    }
+    @media (max-width: 600px) {
+      .grid-3 { grid-template-columns: 1fr; }
+      .nav-links { flex-wrap: wrap; gap: 12px; }
+      .hero { padding-top: 140px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <div class="logo">JAWAB</div>
+      <div class="nav-links">
+        <a href="index.html" data-route="home">Home</a>
+        <a href="about.html" data-route="about">About</a>
+        <a href="chat.html" data-route="chat">Chat</a>
+        <a href="dashboard.html" data-route="dashboard">Dashboard</a>
+      </div>
+      <a class="btn btn-outline" href="chat.html" data-route="chat">Try Live Demo</a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <canvas id="hero-canvas"></canvas>
+      <div class="container hero-content">
+        <h1 class="hero-title">
+          Your Business. Always<br>
+          <span class="typed-line"><span id="typed-text">Answering.</span><span class="cursor"></span></span>
+        </h1>
+        <p class="hero-sub">
+          Jawab is an AI-powered customer support engine built for Pakistani SMEs. It speaks your customers' language,
+          handles their questions instantly, and escalates what matters &mdash; across WhatsApp and the web.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="chat.html" data-route="chat">Start for Free &#8594;</a>
+          <a class="btn btn-outline" href="#features">See How It Works &#8595;</a>
+        </div>
+        <div class="trust-badges">
+          <div class="badge-pill">&#9889; Instant Replies</div>
+          <div class="badge-pill">&#128994; WhatsApp Native</div>
+          <div class="badge-pill">&#128202; Auto-Logged Tickets</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <div class="container reveal">
+        <h2 class="section-title">Everything a support team does. Automated.</h2>
+        <p class="section-sub">
+          From first message to resolved ticket &mdash; Jawab handles the entire lifecycle without lifting a finger.
+        </p>
+      </div>
+      <div class="container grid-3">
+        <div class="card reveal">
+          <div class="icon">&#129302;</div>
+          <h4>Gemini-Powered Replies</h4>
+          <p>Jawab uses Google's Gemini AI to generate human-quality, context-aware responses &mdash; not templates, not scripts. Real understanding.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon">&#128241;</div>
+          <h4>WhatsApp Native</h4>
+          <p>Your customers are already on WhatsApp. Jawab integrates directly with the WhatsApp Business API &mdash; no app downloads, no friction.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon">&#129504;</div>
+          <h4>Smart Classification</h4>
+          <p>Every message is instantly classified as a complaint, query, or escalation. The right response, every time. Nothing slips through.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon">&#128203;</div>
+          <h4>Auto Ticket Logging</h4>
+          <p>Every conversation is automatically logged to Google Sheets. Your team wakes up to a full picture &mdash; no manual entry ever again.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon">&#128680;</div>
+          <h4>Escalation Detection</h4>
+          <p>Jawab knows when a human must step in. Urgent or sensitive messages are flagged immediately before they become a crisis.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon">&#127760;</div>
+          <h4>Web Chat Ready</h4>
+          <p>Not on WhatsApp? No problem. Embed Jawab's web chat widget anywhere on your site and support customers across every channel.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container reveal">
+        <h2 class="section-title">Three steps. Zero overhead.</h2>
+      </div>
+      <div class="container flow">
+        <div class="flow-step reveal">
+          <span>01</span>
+          <h4>Customer Sends a Message</h4>
+          <p>A customer reaches out on WhatsApp or your website &mdash; in English, Urdu, or Roman Urdu.</p>
+        </div>
+        <div class="flow-step reveal">
+          <span>02</span>
+          <h4>Jawab Thinks &amp; Replies</h4>
+          <p>The AI classifies the intent, generates an accurate reply, and responds in seconds &mdash; 24/7, no breaks.</p>
+        </div>
+        <div class="flow-step reveal">
+          <span>03</span>
+          <h4>You Stay in Control</h4>
+          <p>Every ticket is logged. Escalations are flagged. You monitor everything from a clean dashboard.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container stats">
+        <div class="stat-card reveal">
+          <h3>&lt;2s</h3>
+          <p>Average Reply Time</p>
+        </div>
+        <div class="stat-card reveal">
+          <h3>24/7</h3>
+          <p>Always Available</p>
+        </div>
+        <div class="stat-card reveal">
+          <h3>3</h3>
+          <p>Message Categories Handled</p>
+        </div>
+        <div class="stat-card reveal">
+          <h3>100%</h3>
+          <p>Auto-Logged Tickets</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-banner">
+      <div class="container cta-inner reveal">
+        <div>
+          <h2>Stop losing customers to slow replies.</h2>
+          <p>Jawab is ready to handle your support &mdash; right now, tonight, this weekend. While you sleep.</p>
+        </div>
+        <a class="btn btn-primary" href="chat.html" data-route="chat">Try Jawab Free &#8594;</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <div class="logo">JAWAB</div>
+          <p>Jawab &mdash; Built for Pakistani businesses, powered by AI.</p>
+        </div>
+        <div class="footer-links">
+          <a href="index.html" data-route="home">Home</a>
+          <a href="about.html" data-route="about">About</a>
+          <a href="chat.html" data-route="chat">Chat</a>
+          <a href="dashboard.html" data-route="dashboard">Dashboard</a>
+        </div>
+      </div>
+      <div class="footer-bottom">&copy; 2025 Jawab. A Gen AI Hackathon Project.</div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const typedWords = ["Answering.", "Available.", "Intelligent."];
+      let typedIndex = 0;
+      let typedChar = 0;
+      let typingForward = true;
+
+      function runTypingCycle() {
+        const target = document.getElementById("typed-text");
+        if (!target) return;
+
+        const word = typedWords[typedIndex];
+        if (typingForward) {
+          typedChar += 1;
+          if (typedChar >= word.length) {
+            typingForward = false;
+            setTimeout(runTypingCycle, 1200);
+            target.textContent = word;
+            return;
+          }
+        } else {
+          typedChar -= 1;
+          if (typedChar <= 0) {
+            typingForward = true;
+            typedIndex = (typedIndex + 1) % typedWords.length;
+            setTimeout(runTypingCycle, 300);
+            target.textContent = "";
+            return;
+          }
+        }
+
+        target.textContent = word.slice(0, typedChar);
+        setTimeout(runTypingCycle, typingForward ? 90 : 40);
+      }
+
+      function initHeroCanvas() {
+        const canvas = document.getElementById("hero-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        let width = 0;
+        let height = 0;
+        let t = 0;
+
+        function resize() {
+          width = canvas.parentElement.clientWidth;
+          height = canvas.parentElement.clientHeight;
+          canvas.width = width;
+          canvas.height = height;
+        }
+
+        function draw() {
+          t += 0.6;
+          ctx.clearRect(0, 0, width, height);
+          ctx.fillStyle = "rgba(57, 255, 20, 0.15)";
+          const spacing = 36;
+          const offset = (t % spacing);
+          for (let x = -spacing; x < width + spacing; x += spacing) {
+            for (let y = -spacing; y < height + spacing; y += spacing) {
+              const dx = x + offset * 0.4;
+              const dy = y + offset * 0.2;
+              ctx.beginPath();
+              ctx.arc(dx, dy, 1.4, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+          requestAnimationFrame(draw);
+        }
+
+        resize();
+        window.addEventListener("resize", resize);
+        requestAnimationFrame(draw);
+      }
+
+      function initReveal() {
+        const targets = document.querySelectorAll(".reveal");
+        if (!targets.length) return;
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.2 });
+        targets.forEach((el) => observer.observe(el));
+      }
+
+      function applyRouteLinks() {
+        const routeMap = {
+          home: "/",
+          about: "/about",
+          chat: "/chat-page",
+          dashboard: "/dashboard"
+        };
+        const isHttp = window.location.protocol === "http:" || window.location.protocol === "https:";
+        if (!isHttp) return;
+        document.querySelectorAll("[data-route]").forEach((link) => {
+          const key = link.getAttribute("data-route");
+          if (routeMap[key]) {
+            link.setAttribute("href", routeMap[key]);
+          }
+        });
+      }
+
+      function initPageTransitions() {
+        document.querySelectorAll("a[href]").forEach((link) => {
+          const href = link.getAttribute("href");
+          if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) {
+            return;
+          }
+          const url = new URL(link.href, window.location.href);
+          if (url.origin !== window.location.origin) return;
+          link.addEventListener("click", (event) => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            document.body.classList.add("page-fade-out");
+            setTimeout(() => { window.location.href = url.href; }, 250);
+          });
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document.body.classList.add("page-ready");
+        applyRouteLinks();
+        runTypingCycle();
+        initHeroCanvas();
+        initReveal();
+        initPageTransitions();
+      });
+    })();
+  </script>
+</body>
+</html>

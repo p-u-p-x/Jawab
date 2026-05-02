@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Jawab | Support Dashboard</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--bg-primary: #0a0a0a;
+			--bg-secondary: #111111;
+			--bg-tertiary: #1a1a1a;
+			--neon-green: #39ff14;
+			--neon-green-dim: #25b80d;
+			--neon-green-faint: rgba(57, 255, 20, 0.08);
+			--text-primary: #f0f0f0;
+			--text-secondary: #888888;
+			--text-dim: #444444;
+			--border-color: rgba(57, 255, 20, 0.15);
+			--border-active: rgba(57, 255, 20, 0.5);
+			--danger: #ff4444;
+			--warning: #ffaa00;
+			--success: #39ff14;
+		}
+
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+			background: var(--bg-primary);
+			color: var(--text-primary);
+			font-family: "DM Sans", sans-serif;
+			opacity: 0;
+			transition: opacity 0.3s ease;
+		}
+		body.page-ready { opacity: 1; }
+		body.page-fade-out { opacity: 0; }
+		a { color: inherit; text-decoration: none; }
+
+		.container {
+			width: min(1200px, 92vw);
+			margin: 0 auto;
+		}
+
+		.nav {
+			position: sticky;
+			top: 0;
+			z-index: 20;
+			background: rgba(10, 10, 10, 0.9);
+			backdrop-filter: blur(10px);
+			border-bottom: 1px solid var(--border-color);
+		}
+		.nav-inner {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 18px 0;
+			gap: 20px;
+		}
+		.logo {
+			font-family: "Orbitron", sans-serif;
+			letter-spacing: 3px;
+			font-weight: 700;
+			font-size: 20px;
+			color: var(--neon-green);
+			text-shadow: 0 0 12px rgba(57, 255, 20, 0.6);
+			animation: glowPulse 2.4s ease-in-out infinite;
+		}
+		.nav-links {
+			display: flex;
+			gap: 22px;
+			font-size: 14px;
+			color: var(--text-secondary);
+		}
+		.nav-links a { transition: color 0.2s ease; }
+		.nav-links a:hover { color: var(--text-primary); }
+
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+			padding: 10px 16px;
+			border-radius: 999px;
+			font-size: 13px;
+			font-weight: 600;
+			border: 1px solid transparent;
+			transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+			cursor: pointer;
+			background: transparent;
+			color: var(--text-primary);
+		}
+		.btn:active { transform: scale(0.97); }
+		.btn-outline {
+			border-color: var(--neon-green);
+			color: var(--neon-green);
+		}
+		.btn-outline.active {
+			box-shadow: 0 0 12px rgba(57, 255, 20, 0.35);
+			border-color: var(--border-active);
+		}
+		.btn-primary {
+			background: var(--neon-green);
+			color: #0a0a0a;
+			box-shadow: 0 0 14px rgba(57, 255, 20, 0.35);
+		}
+
+		main { flex: 1; padding: 40px 0 60px; }
+		.page-header {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: space-between;
+			gap: 16px;
+			margin-bottom: 24px;
+		}
+		.page-title {
+			font-family: "Orbitron", sans-serif;
+			font-size: clamp(24px, 4vw, 40px);
+			margin: 0 0 6px;
+		}
+		.timestamp {
+			color: var(--text-secondary);
+			font-size: 13px;
+			font-family: "JetBrains Mono", monospace;
+		}
+
+		.stats {
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 18px;
+			margin-bottom: 28px;
+		}
+		.stat-card {
+			background: var(--bg-secondary);
+			border: 1px solid var(--border-color);
+			border-radius: 16px;
+			padding: 22px;
+		}
+		.stat-card h3 {
+			font-family: "Orbitron", sans-serif;
+			margin: 0 0 6px;
+			color: var(--neon-green);
+			text-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
+		}
+		.stat-card p { margin: 0; color: var(--text-secondary); }
+
+		.filter-bar {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 10px;
+			margin-bottom: 18px;
+		}
+
+		.table-card {
+			background: var(--bg-secondary);
+			border: 1px solid var(--border-color);
+			border-radius: 16px;
+			padding: 18px;
+		}
+		.table-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin-bottom: 10px;
+			flex-wrap: wrap;
+			gap: 12px;
+		}
+		.table-header h4 { margin: 0; }
+		.status-text { color: var(--text-secondary); font-size: 12px; }
+
+		.table-wrapper { overflow-x: auto; }
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			min-width: 720px;
+		}
+		th, td {
+			text-align: left;
+			padding: 12px;
+			border-bottom: 1px solid var(--border-color);
+			font-size: 13px;
+		}
+		th { color: var(--text-secondary); font-weight: 500; }
+		td { color: var(--text-primary); }
+		tr:hover td { background: var(--bg-tertiary); }
+
+		.badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 4px 10px;
+			border-radius: 999px;
+			font-size: 11px;
+			font-family: "JetBrains Mono", monospace;
+			border: 1px solid transparent;
+		}
+		.badge--query { color: var(--success); border-color: rgba(57, 255, 20, 0.5); background: rgba(57, 255, 20, 0.08); }
+		.badge--complaint { color: var(--warning); border-color: rgba(255, 170, 0, 0.5); background: rgba(255, 170, 0, 0.1); }
+		.badge--escalate { color: var(--danger); border-color: rgba(255, 68, 68, 0.5); background: rgba(255, 68, 68, 0.1); }
+
+		.mono { font-family: "JetBrains Mono", monospace; }
+		.muted { color: var(--text-secondary); }
+
+		.empty-state {
+			display: none;
+			text-align: center;
+			padding: 40px 0 28px;
+			color: var(--text-secondary);
+		}
+		.empty-state .icon { font-size: 26px; margin-bottom: 12px; }
+
+		.footer {
+			border-top: 1px solid var(--border-color);
+			background: var(--bg-primary);
+			padding: 32px 0 24px;
+		}
+		.footer-top {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: space-between;
+			gap: 16px;
+		}
+		.footer p { color: var(--text-secondary); margin: 8px 0 0; }
+		.footer-links { display: flex; gap: 16px; color: var(--text-secondary); }
+		.footer-bottom { margin-top: 18px; color: var(--text-dim); font-size: 13px; }
+
+		@keyframes glowPulse {
+			0%, 100% { text-shadow: 0 0 12px rgba(57, 255, 20, 0.4); }
+			50% { text-shadow: 0 0 22px rgba(57, 255, 20, 0.8); }
+		}
+
+		::-webkit-scrollbar { width: 8px; }
+		::-webkit-scrollbar-track { background: var(--bg-primary); }
+		::-webkit-scrollbar-thumb {
+			background: var(--neon-green-dim);
+			border-radius: 10px;
+		}
+		* { scrollbar-width: thin; scrollbar-color: var(--neon-green-dim) var(--bg-primary); }
+
+		@media (max-width: 900px) {
+			.nav-inner { flex-direction: column; align-items: flex-start; }
+			.stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+		}
+		@media (max-width: 600px) {
+			.stats { grid-template-columns: 1fr; }
+		}
+		@media (prefers-reduced-motion: reduce) {
+			* { animation: none !important; transition: none !important; }
+		}
+	</style>
+</head>
+<body>
+	<nav class="nav">
+		<div class="container nav-inner">
+			<div class="logo">JAWAB</div>
+			<div class="nav-links">
+				<a href="index.html" data-route="home">Home</a>
+				<a href="about.html" data-route="about">About</a>
+				<a href="chat.html" data-route="chat">Chat</a>
+				<a href="dashboard.html" data-route="dashboard">Dashboard</a>
+			</div>
+			<a class="btn btn-outline" href="chat.html" data-route="chat">Try Live Demo</a>
+		</div>
+	</nav>
+
+	<main>
+		<div class="container">
+			<div class="page-header">
+				<div>
+					<h1 class="page-title">Support Dashboard</h1>
+					<div class="timestamp" id="last-refreshed">Last refreshed: --</div>
+				</div>
+			</div>
+
+			<div class="stats">
+				<div class="stat-card">
+					<h3 id="stat-total">0</h3>
+					<p>Total Tickets</p>
+				</div>
+				<div class="stat-card">
+					<h3 id="stat-escalated">0</h3>
+					<p>Escalated</p>
+				</div>
+				<div class="stat-card">
+					<h3 id="stat-complaints">0</h3>
+					<p>Complaints</p>
+				</div>
+				<div class="stat-card">
+					<h3 id="stat-queries">0</h3>
+					<p>Queries</p>
+				</div>
+			</div>
+
+			<div class="filter-bar">
+				<button class="btn btn-outline active" data-filter="all">All</button>
+				<button class="btn btn-outline" data-filter="complaint">Complaints</button>
+				<button class="btn btn-outline" data-filter="query">Queries</button>
+				<button class="btn btn-outline" data-filter="escalate">Escalated</button>
+			</div>
+
+			<div class="table-card">
+				<div class="table-header">
+					<h4>Live Tickets</h4>
+					<div style="display:flex; align-items:center; gap:12px;">
+						<div class="status-text" id="load-status"></div>
+						<button class="btn btn-primary" id="refresh-btn">Refresh</button>
+					</div>
+				</div>
+				<div class="table-wrapper" id="table-wrapper">
+					<table>
+						<thead>
+							<tr>
+								<th>Ticket ID</th>
+								<th>Message</th>
+								<th>Category</th>
+								<th>Status</th>
+								<th>Time</th>
+							</tr>
+						</thead>
+						<tbody id="ticket-body"></tbody>
+					</table>
+				</div>
+				<div class="empty-state" id="empty-state">
+					<div class="icon">&#128203;</div>
+					<div>No tickets yet. Start a conversation.</div>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<footer class="footer">
+		<div class="container">
+			<div class="footer-top">
+				<div>
+					<div class="logo">JAWAB</div>
+					<p>Jawab &mdash; Built for Pakistani businesses, powered by AI.</p>
+				</div>
+				<div class="footer-links">
+					<a href="index.html" data-route="home">Home</a>
+					<a href="about.html" data-route="about">About</a>
+					<a href="chat.html" data-route="chat">Chat</a>
+					<a href="dashboard.html" data-route="dashboard">Dashboard</a>
+				</div>
+			</div>
+			<div class="footer-bottom">&copy; 2025 Jawab. A Gen AI Hackathon Project.</div>
+		</div>
+	</footer>
+
+	<script>
+		let allTickets = [];
+		let activeFilter = "all";
+
+		function normalizeKey(key) {
+			return key.toLowerCase().replace(/[^a-z0-9]/g, "");
+		}
+
+		function getField(ticket, candidates) {
+			const normalized = {};
+			Object.keys(ticket || {}).forEach((key) => {
+				normalized[normalizeKey(key)] = ticket[key];
+			});
+			for (const candidate of candidates) {
+				const value = normalized[normalizeKey(candidate)];
+				if (value !== undefined && value !== null && value !== "") {
+					return value;
+				}
+			}
+			return "";
+		}
+
+		function normalizeCategory(raw, isEscalated) {
+			const text = (raw || "").toString().toLowerCase().trim();
+			if (text.includes("complaint")) return "complaint";
+			if (text.includes("query")) return "query";
+			if (text.includes("escalat")) return "escalate";
+			return isEscalated ? "escalate" : (text || "query");
+		}
+
+		function parseTicket(ticket) {
+			const id = getField(ticket, ["Ticket ID", "Ticket", "ID", "ticket_id"]);
+			const phone = getField(ticket, ["Phone", "Phone Number", "From", "Customer"]);
+			const message = getField(ticket, ["Message", "Text", "Query", "Issue"]);
+			const status = getField(ticket, ["Status"]);
+			const timestamp = getField(ticket, ["Timestamp", "Time", "Date"]);
+			const categoryRaw = getField(ticket, ["Category", "Type"]);
+			const escalatedRaw = getField(ticket, ["Escalated", "Escalation", "Urgent", "Flag"]);
+
+			const statusText = (status || "").toString().toLowerCase().trim();
+			const categoryText = (categoryRaw || "").toString().toLowerCase().trim();
+			const escalatedText = (escalatedRaw || "").toString().toLowerCase().trim();
+			const isEscalated = ["yes", "true", "1", "y"].includes(escalatedText)
+				|| statusText.includes("escalat")
+				|| categoryText.includes("escalat");
+
+			const category = normalizeCategory(categoryRaw, isEscalated);
+
+			return {
+				id: id || "--",
+				phone: phone || "--",
+				message: message || "--",
+				status: status || "Open",
+				timestamp: timestamp || "--",
+				category,
+				escalated: isEscalated
+			};
+		}
+
+		function updateStats(tickets) {
+			const parsed = tickets.map(parseTicket);
+			const total = parsed.length;
+			const escalated = parsed.filter((t) => t.escalated).length;
+			const complaints = parsed.filter((t) => t.category === "complaint").length;
+			const queries = parsed.filter((t) => t.category === "query").length;
+
+			document.getElementById("stat-total").textContent = total;
+			document.getElementById("stat-escalated").textContent = escalated;
+			document.getElementById("stat-complaints").textContent = complaints;
+			document.getElementById("stat-queries").textContent = queries;
+		}
+
+		function renderTickets() {
+			const tbody = document.getElementById("ticket-body");
+			tbody.innerHTML = "";
+
+			const parsed = allTickets.map(parseTicket);
+			const filtered = parsed.filter((ticket) => {
+				if (activeFilter === "all") return true;
+				if (activeFilter === "escalate") return ticket.escalated;
+				return ticket.category === activeFilter;
+			});
+
+			const emptyState = document.getElementById("empty-state");
+			const tableWrapper = document.getElementById("table-wrapper");
+			if (filtered.length === 0) {
+				emptyState.style.display = "block";
+				tableWrapper.style.display = "none";
+				return;
+			}
+			emptyState.style.display = "none";
+			tableWrapper.style.display = "block";
+
+			filtered.forEach((ticket) => {
+				const row = document.createElement("tr");
+				row.innerHTML = `
+					<td class="mono">${ticket.id}</td>
+					<td>${truncate(ticket.message, 50)}</td>
+					<td>${renderCategoryBadge(ticket.category)}</td>
+					<td>${ticket.status}</td>
+					<td class="mono">${ticket.timestamp}</td>
+				`;
+				tbody.appendChild(row);
+			});
+		}
+
+		function renderCategoryBadge(category) {
+			if (category === "complaint") {
+				return "<span class='badge badge--complaint'>complaint</span>";
+			}
+			if (category === "escalate") {
+				return "<span class='badge badge--escalate'>escalate</span>";
+			}
+			return "<span class='badge badge--query'>query</span>";
+		}
+
+		function truncate(text, limit) {
+			if (!text) return "--";
+			const str = text.toString();
+			return str.length > limit ? str.slice(0, limit) + "..." : str;
+		}
+
+		function updateTimestamp() {
+			const now = new Date();
+			document.getElementById("last-refreshed").textContent = "Last refreshed: " + now.toLocaleTimeString();
+		}
+
+		function setStatus(message) {
+			document.getElementById("load-status").textContent = message || "";
+		}
+
+		async function loadTickets() {
+			setStatus("Loading...");
+			try {
+				const response = await fetch("/tickets");
+				if (!response.ok) throw new Error("Request failed");
+				const data = await response.json();
+				allTickets = Array.isArray(data.tickets) ? data.tickets : [];
+				updateStats(allTickets);
+				renderTickets();
+				updateTimestamp();
+				setStatus("");
+			} catch (error) {
+				setStatus("Failed to load tickets.");
+			}
+		}
+
+		function initFilters() {
+			const buttons = document.querySelectorAll("[data-filter]");
+			buttons.forEach((button) => {
+				button.addEventListener("click", () => {
+					buttons.forEach((btn) => btn.classList.remove("active"));
+					button.classList.add("active");
+					activeFilter = button.getAttribute("data-filter");
+					renderTickets();
+				});
+			});
+		}
+
+		function applyRouteLinks() {
+			const routeMap = {
+				home: "/",
+				about: "/about",
+				chat: "/chat-page",
+				dashboard: "/dashboard"
+			};
+			const isHttp = window.location.protocol === "http:" || window.location.protocol === "https:";
+			if (!isHttp) return;
+			document.querySelectorAll("[data-route]").forEach((link) => {
+				const key = link.getAttribute("data-route");
+				if (routeMap[key]) {
+					link.setAttribute("href", routeMap[key]);
+				}
+			});
+		}
+
+		function initPageTransitions() {
+			document.querySelectorAll("a[href]").forEach((link) => {
+				const href = link.getAttribute("href");
+				if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) {
+					return;
+				}
+				const url = new URL(link.href, window.location.href);
+				if (url.origin !== window.location.origin) return;
+				link.addEventListener("click", (event) => {
+					if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+					event.preventDefault();
+					document.body.classList.add("page-fade-out");
+					setTimeout(() => { window.location.href = url.href; }, 250);
+				});
+			});
+		}
+
+		document.addEventListener("DOMContentLoaded", () => {
+			document.body.classList.add("page-ready");
+			applyRouteLinks();
+			initFilters();
+			initPageTransitions();
+			loadTickets();
+			setInterval(loadTickets, 10000);
+
+			document.getElementById("refresh-btn").addEventListener("click", () => {
+				loadTickets();
+			});
+		});
+	</script>
+</body>
+</html>

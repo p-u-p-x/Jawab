@@ -15,10 +15,14 @@ from whatsapp_handler import send_whatsapp_message, extract_message_from_webhook
 
 # Tell Flask to look in frontend folder for templates and static files
 app = Flask(__name__, 
-            template_folder='../frontend/templates',
+            template_folder='../frontend/pages',
             static_folder='../frontend/static')
 
 @app.route("/", methods=["GET"])
+def home_page():
+    return render_template("index.html")
+
+@app.route("/api/health", methods=["GET"])
 def health_check():
     return jsonify({
         "status": "running",
@@ -83,7 +87,11 @@ def get_tickets():
 
 @app.route("/chat-page", methods=["GET"])
 def chat_page():
-    return render_template("index.html")
+    return render_template("chat.html")
+
+@app.route("/about", methods=["GET"])
+def about_page():
+    return render_template("about.html")
 
 @app.route("/dashboard", methods=["GET"])
 def dashboard_page():
