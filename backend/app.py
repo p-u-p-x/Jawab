@@ -11,9 +11,22 @@ from classifier import classify_message
 from sheets_handler import log_ticket, get_conversation_history, save_message, get_all_tickets
 from telegram_handler import send_telegram_message, extract_message_from_webhook
 
+# Smart template folder — works on BOTH local and Render/Railway
+# On your laptop: backend/ and frontend/ are separate folders
+# On Render/Railway: everything is copied into one place
+def get_template_folder():
+    if os.path.exists('../frontend/pages'):
+        return '../frontend/pages'  # Local development
+    return 'templates'  # Render/Railway production
+
+def get_static_folder():
+    if os.path.exists('../frontend/static'):
+        return '../frontend/static'  # Local development
+    return 'static'  # Render/Railway production
+
 app = Flask(__name__, 
-            template_folder='../frontend/pages',
-            static_folder='../frontend/static')
+            template_folder=get_template_folder(),
+            static_folder=get_static_folder())
 
 @app.route("/", methods=["GET"])
 def home_page():
