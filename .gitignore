@@ -39,4 +39,8 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 .vscode/
-.idea/
+.idea/.env
+credentials.json
+__pycache__/
+*.pyc
+.DS_Store

@@ -36,3 +36,4 @@ ESCALATION_KEYWORDS = [
     "insaan", "manager chahiye", "baat karni hai", "banda chahiye",
 ]
 MAX_CONVERSATION_HISTORY = 5  # Remember last 5 messages per customerSHEET_ID = os.getenv("SHEET_ID")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
